@@ -38,7 +38,10 @@ import com.example.bildo.ui.theme.BildoTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        //enableEdgeToEdge()
+        if(!hasCameraPermission()){
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA),0)
+        }
         setContent {
             BildoTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -50,12 +53,22 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    private fun hasCameraPermission() = ContextCompat.checkSelfPermission(
+        this, Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
 
-    companion object{
-        private val CAMERAX_PERMISSIONS = arrayOf(
-            Manifest.permission.CAMERA,
-        )
-    }
+
+//    private fun hasRequiredPermissions():Boolean{
+//        return CAMERAX_PERMISSIONS.all{
+//            ContextCompat.checkSelfPermission(applicationContext, it) == packageManager.PERMISSION_GRANTED
+//        }
+//    }
+//
+//    companion object{
+//        private val CAMERAX_PERMISSIONS = arrayOf(
+//            Manifest.permission.CAMERA,
+//        )
+//    }
 
 }
 
