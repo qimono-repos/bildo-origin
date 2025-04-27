@@ -1,5 +1,6 @@
 package com.example.bildo
 
+import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,6 +29,13 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    companion object{
+        private val CAMERAX_PERMISSIONS = arrayOf(
+            Manifest.permission.CAMERA,
+        )
+    }
+
 }
 
 @Composable
@@ -45,3 +53,4 @@ fun GreetingPreview() {
         Greeting("Android")
     }
 }
+
