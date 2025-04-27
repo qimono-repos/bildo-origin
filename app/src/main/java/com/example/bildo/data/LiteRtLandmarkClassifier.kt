@@ -2,7 +2,7 @@ package com.example.bildo.data
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.view.Surfacce
+import android.view.Surface
 
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
@@ -13,6 +13,82 @@ import org.tensorflow.lite.task.vision.classifier.ImageClassifier
 import com.example.bildo.domain.Classification
 import com.example.bildo.domain.LandmarkClassifier
 
-class LiteRtLandmarkClassifier.kt{
+class LiteRtLandmarkClassifier (
+  private val context: Context,
+  private val treshold: Float = 0.5f,
+  private val maxResults: Int = 1
+): LandmarkClassifier {
+  
+  private var classifier: ImageClassifier? = null
 
+  private fun setupClassifier(){
+    val baseOptions = BaseOptions.builder()
+      .setNumThreads(2)
+      .build()
+
+    val options = ImageClassifier.ImageProcessingOptions.builder()
+      .setBaseOptions(baseOptions)
+      .setMaxResults(maxResults)
+      .setScoreTreshold(treshold)
+      .build()
+    
+    try{
+      classifier = ImageClassifier.createFromFileandOptions(
+        context,
+        "landmarks.tflite",
+        options 
+      )
+    } catch(e: IlegalStateException){
+      e.printStackTrace()
+    }
+  }
+
+  private fun getOrientationFromRotation(rotation: Int): ImageProcessingOptions.Orientation{
+    return when(rotation){
+      Surface.ROTATION_270 -> ImageProcessingOptions.Orientation.BOTTOM_RIGHT
+      Surface.ROTATION_90 -> ImageProcessingOptions.Orientation.TOP_LEFT
+      Surface.ROTATION_180 -> ImageProcessingOptions.Orientation.RIGHT_BOTTOM
+      else -> ImageProcessingOptions.Orientation.RIGHT_TOP
+    }
+  }
+
+  override fun classify(bitmap: Bitmap, rotation: Int): List<Classification>{
+    
+    if(classifier == null){ setupClassifier() }
+
+    val ImageProcessor= ImageProcessor.Builder().build()
+
+    val tensorImage = ImageProcessor.process(TensorImage.fromBitmap(bitmap))
+
+    val ImageProcessingOptions = ImageProcessingOptions.builder()
+      .setOrientation(getOrientationFromRotation(rotation))
+      .build()
+
+    return results?.flatMap { classificationList ->
+      classificationList.categories.map{ category ->
+        Classification( name = category.displayName, score = category.score)
+      }
+    }?.distinctby { it.name }?: emptyList()
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
