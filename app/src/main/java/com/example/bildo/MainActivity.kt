@@ -32,6 +32,10 @@ import androidx.core.content.ContextCompat
 
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.Scaffold
+import com.example.bildo.data.LiteRtLandmarkClassifier
+import com.example.bildo.domain.Classification
+import com.example.bildo.presentation.CameraPreview
+import com.example.bildo.presentation.LandmarkImageAnalyzer
 
 import com.example.bildo.ui.theme.BildoTheme
 
@@ -44,7 +48,7 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             BildoTheme {
-                val classifications by remember { mutableStateOf(emptyList<Classification>())}
+                var classifications by remember { mutableStateOf(emptyList<Classification>())}
                 
                 val analyzer = remember {
                     LandmarkImageAnalyzer(
@@ -55,13 +59,14 @@ class MainActivity : ComponentActivity() {
 
                 val controller = remember {
                     LifecycleCameraController(applicationContext).apply{
-                        setEnableUseCases(CameraController.IMAGE_ANALYSIS)
+                        setEnabledUseCases(CameraController.IMAGE_ANALYSIS)
                         setImageAnalysisAnalyzer(ContextCompat.getMainExecutor(applicationContext), analyzer)
                     }
                 }
 
                 Box( modifier = Modifier.fillMaxSize()){
                     CameraPreview(controller, Modifier.fillMaxSize())
+                    //CameraPreview(controller, Modifier.fillMaxSize())
 
                     Column( modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)){
                         classifications.forEach{
@@ -69,10 +74,10 @@ class MainActivity : ComponentActivity() {
                                 text = it.name,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.PrimaryContainer)
+                                    .background(MaterialTheme.colorScheme.primaryContainer)
                                     .padding(8.dp),
                                 textAlign = TextAlign.Center,
-                                fontSize = 20.sp.
+                                fontSize = 20.sp,
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
