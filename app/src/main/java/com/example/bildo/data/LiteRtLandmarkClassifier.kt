@@ -26,19 +26,20 @@ class LiteRtLandmarkClassifier (
       .setNumThreads(2)
       .build()
 
-    val options = ImageClassifier.ImageProcessingOptions.builder()
+    val options = ImageClassifier.ImageClassifierOptions.builder()//.ImageProcessingOptions.builder()
       .setBaseOptions(baseOptions)
       .setMaxResults(maxResults)
-      .setScoreTreshold(treshold)
+      .setScoreThreshold(treshold)
+      //.setScoreTreshold(treshold)
       .build()
     
     try{
-      classifier = ImageClassifier.createFromFileandOptions(
+      classifier = ImageClassifier.createFromFileAndOptions(
         context,
         "landmarks.tflite",
         options 
       )
-    } catch(e: IlegalStateException){
+    } catch(e: IllegalStateException){
       e.printStackTrace()
     }
   }
@@ -60,15 +61,17 @@ class LiteRtLandmarkClassifier (
 
     val tensorImage = ImageProcessor.process(TensorImage.fromBitmap(bitmap))
 
-    val ImageProcessingOptions = ImageProcessingOptions.builder()
+    val imageProcessingOptions = ImageProcessingOptions.builder()
       .setOrientation(getOrientationFromRotation(rotation))
       .build()
+
+    val results = classifier?.classify(tensorImage, imageProcessingOptions)
 
     return results?.flatMap { classificationList ->
       classificationList.categories.map{ category ->
         Classification( name = category.displayName, score = category.score)
       }
-    }?.distinctby { it.name }?: emptyList()
+    }?.distinctBy { it.name }?: emptyList()
   }
 }
 
