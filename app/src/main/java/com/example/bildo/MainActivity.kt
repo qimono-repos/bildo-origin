@@ -44,12 +44,41 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             BildoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                val classifications by remember { mutableStateOf(emptyList<Classification>())}
+                
+                val analyzer = remember {
+                    LandmarkImageAnalyzer(
+                        classifier = LiteRtLandmarkClassifier(context = applicationContext),
+                        onResults = { classifications = it }
                     )
                 }
+
+                val controller = remember {
+                    LifecycleCameraController(applicationContext).apply{
+                        setEnableUseCases(CameraController.IMAGE_ANALYSIS)
+                        setImageAnalysisAnalyzer(ContextCompat.getMainExecutor(applicationContext), analyzer)
+                    }
+                }
+
+                Box( modifier = Modifier.fillMaxSize()){
+                    CameraPreview(controller, Modifier.fillMaxSize())
+
+                    Column( modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)){
+                        classifications.forEach{
+                            Text(
+                                text = it.name,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.PrimaryContainer)
+                                    .padding(8.dp),
+                                textAlign = TextAlign.Center,
+                                fontSize = 20.sp.
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+
             }
         }
     }
@@ -57,34 +86,21 @@ class MainActivity : ComponentActivity() {
         this, Manifest.permission.CAMERA
     ) == PackageManager.PERMISSION_GRANTED
 
-
-//    private fun hasRequiredPermissions():Boolean{
-//        return CAMERAX_PERMISSIONS.all{
-//            ContextCompat.checkSelfPermission(applicationContext, it) == packageManager.PERMISSION_GRANTED
-//        }
-//    }
-//
-//    companion object{
-//        private val CAMERAX_PERMISSIONS = arrayOf(
-//            Manifest.permission.CAMERA,
-//        )
-//    }
-
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+// @Composable
+// fun Greeting(name: String, modifier: Modifier = Modifier) {
+//     Text(
+//         text = "Hello $name!",
+//         modifier = modifier
+//     )
+// }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BildoTheme {
-        Greeting("Android")
-    }
-}
+// @Preview(showBackground = true)
+// @Composable
+// fun GreetingPreview() {
+//     BildoTheme {
+//         Greeting("Android")
+//     }
+// }
 
