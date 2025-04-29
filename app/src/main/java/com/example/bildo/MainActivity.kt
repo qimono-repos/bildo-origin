@@ -32,9 +32,11 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -100,13 +102,18 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun LandmarkText(landmark: String) {
-        VignetteText(
-            text = "Detected: $landmark",
-            modifier = Modifier
-                .wrapContentSize()
-                .padding(16.dp),
-            tailPosition = TailPosition.BOTTOM
-        )
+        Column (
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.End
+        ) {
+            VignetteText(
+                text = "$landmark",
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(horizontal = 16.dp, vertical = 60.dp),
+                tailPosition = TailPosition.BOTTOM
+            )
+        }
     }
 
     @Composable
@@ -116,20 +123,29 @@ class MainActivity : ComponentActivity() {
         tailPosition: TailPosition = TailPosition.BOTTOM,
         contentAlignment: Alignment = Alignment.Center
     ) {
+        var textSize by remember {mutableStateOf(IntSize.Zero)}
         Box(
             modifier = modifier
-                .drawBehind {
-                    drawVignette(size, tailPosition = tailPosition)
-                },
+                .onGloballyPositioned { textSize = it.size },
+//                .drawBehind {
+//                    drawVignette(size, tailPosition = tailPosition)
+//                },
             contentAlignment = contentAlignment
         ) {
             Text(
                 text = text,
                 color = Color.Black,
                 fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
+                fontSize = 25.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .drawBehind {
+                        drawVignette(
+                            size = Size( textSize.width.toFloat() +10, textSize.height.toFloat() +80),
+                            tailPosition = tailPosition
+                        )
+                    }
+                    //.padding(16.dp)
             )
         }
     }
@@ -145,6 +161,7 @@ class MainActivity : ComponentActivity() {
         tailHeight: Dp = 30.dp,
         tailOffset: Dp = 30.dp,
         tailPosition: TailPosition = TailPosition.BOTTOM,
+
     ) {
         val cornerRadiusPx = cornerRadius.toPx()
         val tailWidthPx = tailWidth.toPx()
@@ -211,7 +228,7 @@ class MainActivity : ComponentActivity() {
         drawPath(path = path, color = Color.White)
         drawPath(
             path = path,
-            color = Color.Black,
+            color = Color.White,
             style = Stroke(width = 2.dp.toPx(), join = StrokeJoin.Round)
         )
     }
